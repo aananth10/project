@@ -1,0 +1,1157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Urban Water Scarcity Prediction Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1em;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .card-title {
+        font-size: 0.9em;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+
+      .card-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .card-unit {
+        font-size: 0.8em;
+        color: #999;
+        margin-top: 5px;
+      }
+
+      .status-card {
+        grid-column: 1 / -1;
+      }
+
+      .status-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .status-info {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .risk-badge {
+        display: inline-block;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.2em;
+        color: white;
+        margin-top: 10px;
+      }
+
+      .risk-low {
+        background: #2ecc71;
+      }
+
+      .risk-medium {
+        background: #f39c12;
+      }
+
+      .risk-high {
+        background: #e74c3c;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px 0;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .chart-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .prediction-form {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      label {
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      input[type="number"] {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1em;
+        transition: border-color 0.2s;
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-secondary {
+        background: #95a5a6;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #7f8c8d;
+      }
+
+      .prediction-result {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-top: 15px;
+        display: none;
+      }
+
+      .prediction-result.show {
+        display: block;
+      }
+
+      .forecast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .forecast-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border-left: 4px solid #667eea;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .stat-item {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-label {
+        color: #666;
+        font-size: 0.9em;
+        margin-bottom: 10px;
+      }
+
+      .stat-value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .loading {
+        text-align: center;
+        color: #667eea;
+        font-weight: 600;
+      }
+
+      .error {
+        background: #ffe6e6;
+        border: 1px solid #ffcccc;
+        color: #c0392b;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+        display: none;
+      }
+
+      .error.show {
+        display: block;
+      }
+
+      .success {
+        background: #e6ffe6;
+        border: 1px solid #ccffcc;
+        color: #27ae60;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+        display: none;
+      }
+
+      .success.show {
+        display: block;
+      }
+
+      footer {
+        text-align: center;
+        color: white;
+        margin-top: 30px;
+        padding: 20px;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 1.8em;
+        }
+
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🌊 Urban Water Scarcity Prediction Tool</h1>
+        <p class="subtitle">
+          Real-time monitoring and forecasting system for urban water resources
+        </p>
+      </header>
+
+      <!-- Location & Area Selector -->
+      <div
+        style="
+          background: white;
+          padding: 25px;
+          border-radius: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          margin-bottom: 30px;
+        "
+      >
+        <h2 style="margin-bottom: 20px; color: #333; font-size: 1.5em">
+          📍 Select City & Area
+        </h2>
+        <div
+          class="form-row"
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+          "
+        >
+          <div class="form-group">
+            <label
+              for="locationSelect"
+              style="font-weight: bold; color: #333; font-size: 1.1em"
+              >City</label
+            >
+            <select
+              id="locationSelect"
+              style="
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #667eea;
+                border-radius: 5px;
+                font-size: 1em;
+                cursor: pointer;
+              "
+            >
+              <option value="" selected>-- Select a City --</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end">
+            <button
+              onclick="fetchLocationData()"
+              style="
+                background: #667eea;
+                color: white;
+                padding: 12px 30px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1em;
+                font-weight: bold;
+                width: 100%;
+              "
+            >
+              🔍 Fetch Live Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Location Data -->
+        <div id="liveLocationData" style="margin-top: 25px; display: none">
+          <h3
+            style="
+              color: #333;
+              margin-bottom: 15px;
+              border-bottom: 2px solid #667eea;
+              padding-bottom: 10px;
+            "
+          >
+            Live Data for
+            <span id="selectedCity" style="color: #667eea; font-weight: bold"
+              >--</span
+            >
+          </h3>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 20px;
+              margin-bottom: 20px;
+            "
+          >
+            <div
+              style="
+                background: #f0f7ff;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
+                Climate Zone
+              </div>
+              <div
+                style="font-size: 1.2em; font-weight: bold; color: #333"
+                id="climateZone"
+              >
+                --
+              </div>
+            </div>
+            <div
+              style="
+                background: #f0f7ff;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
+                Population
+              </div>
+              <div
+                style="font-size: 1.2em; font-weight: bold; color: #333"
+                id="cityPopulation"
+              >
+                --
+              </div>
+            </div>
+            <div
+              style="
+                background: #f0f7ff;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
+                Annual Rainfall
+              </div>
+              <div
+                style="font-size: 1.2em; font-weight: bold; color: #333"
+                id="annualRainfall"
+              >
+                --
+              </div>
+            </div>
+            <div
+              style="
+                background: #f0f7ff;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
+                Current Risk Level
+              </div>
+              <div
+                style="font-size: 1.2em; font-weight: bold; color: #333"
+                id="currentRiskLevel"
+              >
+                --
+              </div>
+            </div>
+          </div>
+
+          <div
+            style="
+              background: #fff3cd;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 20px;
+            "
+          >
+            <strong style="color: #856404">Water Sources:</strong>
+            <span id="waterSources" style="color: #666">--</span>
+          </div>
+
+          <div style="background: #f8d7da; padding: 15px; border-radius: 8px">
+            <strong style="color: #721c24">Risk Factors:</strong>
+            <span id="riskFactors" style="color: #666">--</span>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 20px;
+              margin-top: 20px;
+            "
+          >
+            <div
+              style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border: 2px solid #e0e0e0;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em">Current Rainfall</div>
+              <div
+                style="font-size: 1.8em; font-weight: bold; color: #667eea"
+                id="liveRainfall"
+              >
+                --
+              </div>
+              <div style="color: #999; font-size: 0.85em">mm</div>
+            </div>
+            <div
+              style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border: 2px solid #e0e0e0;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em">Groundwater Level</div>
+              <div
+                style="font-size: 1.8em; font-weight: bold; color: #667eea"
+                id="liveGroundwater"
+              >
+                --
+              </div>
+              <div style="color: #999; font-size: 0.85em">m</div>
+            </div>
+            <div
+              style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border: 2px solid #e0e0e0;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em">Water Consumption</div>
+              <div
+                style="font-size: 1.8em; font-weight: bold; color: #667eea"
+                id="liveConsumption"
+              >
+                --
+              </div>
+              <div style="color: #999; font-size: 0.85em">Million L</div>
+            </div>
+            <div
+              style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border: 2px solid #e0e0e0;
+              "
+            >
+              <div style="color: #666; font-size: 0.9em">Scarcity Index</div>
+              <div
+                style="font-size: 1.8em; font-weight: bold; color: #667eea"
+                id="liveScarcityIndex"
+              >
+                --
+              </div>
+              <div style="color: #999; font-size: 0.85em">ratio</div>
+            </div>
+          </div>
+
+          <div
+            style="
+              margin-top: 20px;
+              padding: 15px;
+              background: #e8f5e9;
+              border-radius: 8px;
+              border-left: 4px solid #4caf50;
+            "
+          >
+            <strong>Last Updated:</strong>
+            <span id="lastUpdated" style="color: #666">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prediction Form -->
+      <div class="prediction-form">
+        <h2 style="margin-bottom: 20px; color: #333">Make a Prediction</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="rainfall">Rainfall (mm)</label>
+            <input
+              type="number"
+              id="rainfall"
+              min="0"
+              max="100"
+              step="0.1"
+              value="10"
+            />
+          </div>
+          <div class="form-group">
+            <label for="groundwater">Groundwater Level (m)</label>
+            <input
+              type="number"
+              id="groundwater"
+              min="0"
+              max="1000"
+              step="1"
+              value="500"
+            />
+          </div>
+          <div class="form-group">
+            <label for="consumption">Water Consumption (Million L)</label>
+            <input
+              type="number"
+              id="consumption"
+              min="0"
+              max="200"
+              step="0.1"
+              value="50"
+            />
+          </div>
+          <div class="form-group">
+            <label for="population">Population</label>
+            <input
+              type="number"
+              id="population"
+              min="0"
+              step="1000"
+              value="1000000"
+            />
+          </div>
+        </div>
+        <div class="button-group">
+          <button class="btn-primary" onclick="makePrediction()">
+            🔮 Predict Risk Level
+          </button>
+          <button class="btn-secondary" onclick="loadCurrentData()">
+            📍 Use Current Data
+          </button>
+        </div>
+        <div id="predictionResult" class="prediction-result"></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 style="margin-bottom: 15px">Rainfall & Consumption Trend</h3>
+          <div class="chart-container">
+            <canvas id="rainfallChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3 style="margin-bottom: 15px">Water Scarcity Index</h3>
+          <div class="chart-container">
+            <canvas id="scarcityChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="stats-grid" id="statsGrid" style="display: none">
+        <div class="stat-item">
+          <div class="stat-label">Average Rainfall</div>
+          <div class="stat-value" id="avgRainfall">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Average Groundwater</div>
+          <div class="stat-value" id="avgGroundwater">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Low Risk Days</div>
+          <div class="stat-value" id="lowRiskDays">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Medium Risk Days</div>
+          <div class="stat-value" id="mediumRiskDays">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">High Risk Days</div>
+          <div class="stat-value" id="highRiskDays">--</div>
+        </div>
+      </div>
+
+      <!-- Forecast -->
+      <div
+        style="
+          background: white;
+          padding: 25px;
+          border-radius: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          margin-bottom: 30px;
+        "
+      >
+        <h2 style="margin-bottom: 20px; color: #333">7-Day Forecast</h2>
+        <div class="forecast-grid" id="forecastGrid">
+          <div class="loading">Loading forecast...</div>
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          © 2026 Urban Water Scarcity Prediction Tool | Data-Driven Water
+          Management Solution
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      let rainfallChartInstance = null;
+      let scarcityChartInstance = null;
+
+      // Initialize dashboard
+      async function initializeDashboard() {
+        console.log("Initializing dashboard...");
+        await loadLocations(); // Load locations first
+        await Promise.all([
+          loadHistoricalData(),
+          loadStatistics(),
+          loadForecast(),
+        ]);
+      }
+
+      // Load available locations
+      async function loadLocations() {
+        try {
+          const response = await fetch("/api/locations");
+          const result = await response.json();
+
+          if (result.status === "success") {
+            const locationSelect = document.getElementById("locationSelect");
+            locationSelect.innerHTML =
+              '<option value="" selected>-- Select a City --</option>';
+
+            result.data.forEach((location) => {
+              const option = document.createElement("option");
+              option.value = location.name;
+              option.textContent = `${location.name} (${location.climate})`;
+              locationSelect.appendChild(option);
+            });
+
+            console.log("Locations loaded successfully");
+          }
+        } catch (error) {
+          console.error("Error loading locations:", error);
+        }
+      }
+
+      // Fetch live location data
+      async function fetchLocationData() {
+        const locationSelect = document.getElementById("locationSelect");
+        const selectedLocation = locationSelect.value;
+
+        if (!selectedLocation) {
+          showError("Please select a city first");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/api/location/${selectedLocation}/data`,
+          );
+          const result = await response.json();
+
+          if (result.status === "success") {
+            const data = result;
+            const areaInfo = data.area_info;
+            const liveData = data.live_data;
+            const stats = data.statistics;
+
+            // Update location data section
+            document.getElementById("selectedCity").textContent = areaInfo.city;
+            document.getElementById("climateZone").textContent =
+              areaInfo.climate_zone;
+            document.getElementById("cityPopulation").textContent =
+              (areaInfo.population / 1000000).toFixed(2) + "M";
+            document.getElementById("annualRainfall").textContent =
+              areaInfo.annual_rainfall + " mm/year";
+            document.getElementById("waterSources").textContent =
+              areaInfo.water_sources.join(", ");
+            document.getElementById("riskFactors").textContent =
+              areaInfo.risk_factors.join(", ");
+
+            // Update live data
+            document.getElementById("liveRainfall").textContent =
+              liveData.rainfall_mm.toFixed(2);
+            document.getElementById("liveGroundwater").textContent =
+              liveData.groundwater_level_m.toFixed(2);
+            document.getElementById("liveConsumption").textContent =
+              liveData.water_consumption_mliters.toFixed(2);
+            document.getElementById("liveScarcityIndex").textContent =
+              liveData.scarcity_index.toFixed(2);
+
+            // Update current risk level with color
+            const riskLevelDiv = document.getElementById("currentRiskLevel");
+            riskLevelDiv.textContent = liveData.risk_level;
+            riskLevelDiv.style.color = getRiskColor(liveData.risk_level);
+
+            // Update last updated
+            document.getElementById("lastUpdated").textContent =
+              liveData.date + " | Risk Level: " + liveData.risk_level;
+
+            // Show the live data section
+            document.getElementById("liveLocationData").style.display = "block";
+
+            showSuccess(`Live data loaded for ${selectedLocation}`);
+          } else {
+            showError(result.message || "Failed to load location data");
+          }
+        } catch (error) {
+          console.error("Error fetching location data:", error);
+          showError("Failed to fetch live location data");
+        }
+      }
+
+      // Get risk color
+      function getRiskColor(riskLevel) {
+        const colors = {
+          Low: "#27ae60",
+          Medium: "#f39c12",
+          High: "#e74c3c",
+        };
+        return colors[riskLevel] || "#333";
+      }
+
+      // Load current status
+
+      // Load historical data and update charts
+      async function loadHistoricalData() {
+        try {
+          const response = await fetch("/api/historical-data?days=30");
+          const result = await response.json();
+
+          if (result.status === "success") {
+            const data = result.data;
+
+            // Update rainfall chart
+            updateRainfallChart(data);
+
+            // Update scarcity chart
+            updateScarcityChart(data);
+          }
+        } catch (error) {
+          console.error("Error loading historical data:", error);
+        }
+      }
+
+      // Update rainfall chart
+      function updateRainfallChart(data) {
+        const ctx = document.getElementById("rainfallChart").getContext("2d");
+
+        if (rainfallChartInstance) {
+          rainfallChartInstance.destroy();
+        }
+
+        rainfallChartInstance = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.dates,
+            datasets: [
+              {
+                label: "Rainfall (mm)",
+                data: data.rainfall,
+                borderColor: "#3498db",
+                backgroundColor: "rgba(52, 152, 219, 0.1)",
+                tension: 0.4,
+                yAxisID: "y",
+              },
+              {
+                label: "Consumption (ML)",
+                data: data.consumption,
+                borderColor: "#e74c3c",
+                backgroundColor: "rgba(231, 76, 60, 0.1)",
+                tension: 0.4,
+                yAxisID: "y1",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
+            scales: {
+              y: {
+                type: "linear",
+                display: true,
+                position: "left",
+                title: { display: true, text: "Rainfall (mm)" },
+              },
+              y1: {
+                type: "linear",
+                display: true,
+                position: "right",
+                title: { display: true, text: "Consumption (ML)" },
+                grid: { drawOnChartArea: false },
+              },
+            },
+          },
+        });
+      }
+
+      // Update scarcity chart
+      function updateScarcityChart(data) {
+        const ctx = document.getElementById("scarcityChart").getContext("2d");
+
+        if (scarcityChartInstance) {
+          scarcityChartInstance.destroy();
+        }
+
+        const colors = data.risk_levels.map((level) => {
+          switch (level) {
+            case "Low":
+              return "#2ecc71";
+            case "Medium":
+              return "#f39c12";
+            case "High":
+              return "#e74c3c";
+            default:
+              return "#95a5a6";
+          }
+        });
+
+        scarcityChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: data.dates,
+            datasets: [
+              {
+                label: "Scarcity Index",
+                data: data.scarcity_index,
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: "Scarcity Index" },
+              },
+            },
+          },
+        });
+      }
+
+      // Load statistics
+      async function loadStatistics() {
+        try {
+          const response = await fetch("/api/statistics");
+          const result = await response.json();
+
+          if (result.status === "success") {
+            const data = result.data;
+            document.getElementById("avgRainfall").textContent =
+              data.rainfall.avg.toFixed(2);
+            document.getElementById("avgGroundwater").textContent =
+              data.groundwater.avg.toFixed(2);
+            document.getElementById("lowRiskDays").textContent =
+              data.risk_distribution.Low;
+            document.getElementById("mediumRiskDays").textContent =
+              data.risk_distribution.Medium;
+            document.getElementById("highRiskDays").textContent =
+              data.risk_distribution.High;
+            document.getElementById("statsGrid").style.display = "grid";
+          }
+        } catch (error) {
+          console.error("Error loading statistics:", error);
+        }
+      }
+
+      // Load forecast
+      async function loadForecast() {
+        try {
+          const response = await fetch("/api/forecast");
+          const result = await response.json();
+
+          if (result.status === "success") {
+            const forecastData = result.data;
+            const forecastGrid = document.getElementById("forecastGrid");
+            forecastGrid.innerHTML = forecastData
+              .map(
+                (item) => `
+                        <div class="forecast-item">
+                            <div style="font-weight: 600; margin-bottom: 10px;">${item.date}</div>
+                            <div style="margin-bottom: 8px;">Rain: ${item.rainfall.toFixed(1)}mm</div>
+                            <div class="risk-badge ${`risk-${item.risk_level.toLowerCase()}`}" style="display: block; margin: 10px 0;">
+                                ${item.risk_level}
+                            </div>
+                        </div>
+                    `,
+              )
+              .join("");
+          }
+        } catch (error) {
+          console.error("Error loading forecast:", error);
+        }
+      }
+
+      // Make prediction
+      async function makePrediction() {
+        const rainfall = parseFloat(document.getElementById("rainfall").value);
+        const groundwater = parseFloat(
+          document.getElementById("groundwater").value,
+        );
+        const consumption = parseFloat(
+          document.getElementById("consumption").value,
+        );
+        const population = parseFloat(
+          document.getElementById("population").value,
+        );
+
+        try {
+          const response = await fetch("/api/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              rainfall,
+              groundwater,
+              consumption,
+              population,
+            }),
+          });
+
+          const result = await response.json();
+          displayPredictionResult(result);
+        } catch (error) {
+          console.error("Error making prediction:", error);
+          showError("Error making prediction. Please try again.");
+        }
+      }
+
+      // Display prediction result
+      function displayPredictionResult(result) {
+        const resultDiv = document.getElementById("predictionResult");
+
+        if (result.status === "success") {
+          const data = result.data;
+          const riskClass = `risk-${data.prediction.toLowerCase()}`;
+
+          resultDiv.innerHTML = `
+                    <div style="border-left: 5px solid ${data.risk_color}; padding: 15px;">
+                        <h3 style="margin-bottom: 15px;">Prediction Result</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <strong>Predicted Risk Level:</strong>
+                                <div class="risk-badge ${riskClass}" style="display: block; margin-top: 10px;">
+                                    ${data.prediction}
+                                </div>
+                            </div>
+                            <div>
+                                <strong>Confidence:</strong>
+                                <div style="font-size: 1.5em; color: #667eea; margin-top: 10px;">
+                                    ${data.confidence.toFixed(2)}%
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                            <strong>Risk Probabilities:</strong>
+                            <div style="margin-top: 10px;">
+                                Low: <strong style="color: #2ecc71;">${data.probabilities.Low.toFixed(2)}%</strong>
+                            </div>
+                            <div>
+                                Medium: <strong style="color: #f39c12;">${data.probabilities.Medium.toFixed(2)}%</strong>
+                            </div>
+                            <div>
+                                High: <strong style="color: #e74c3c;">${data.probabilities.High.toFixed(2)}%</strong>
+                            </div>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; border-left: 4px solid #2ecc71;">
+                            <strong>📋 Recommendation:</strong>
+                            <p style="margin-top: 10px;">${data.recommendation}</p>
+                        </div>
+                    </div>
+                `;
+          resultDiv.classList.add("show");
+        }
+      }
+
+      // Load current data for prediction
+      async function loadCurrentData() {
+        try {
+          const response = await fetch("/api/current-status");
+          const result = await response.json();
+
+          if (result.status === "success") {
+            const data = result.data;
+            document.getElementById("rainfall").value =
+              data.rainfall.toFixed(2);
+            document.getElementById("groundwater").value =
+              data.groundwater.toFixed(2);
+            document.getElementById("consumption").value =
+              data.consumption.toFixed(2);
+            document.getElementById("population").value = data.population;
+
+            showSuccess("Current data loaded successfully!");
+          }
+        } catch (error) {
+          console.error("Error loading current data:", error);
+          showError("Failed to load current data");
+        }
+      }
+
+      // Helper functions
+      function showError(message) {
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "error show";
+        errorDiv.textContent = "❌ " + message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
+      }
+
+      function showSuccess(message) {
+        const successDiv = document.createElement("div");
+        successDiv.className = "success show";
+        successDiv.textContent = "✓ " + message;
+        document.body.appendChild(successDiv);
+        setTimeout(() => successDiv.remove(), 3000);
+      }
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", initializeDashboard);
+
+      // Refresh data every 5 minutes
+      setInterval(loadHistoricalData, 300000);
+    </script>
+  </body>
+</html>
