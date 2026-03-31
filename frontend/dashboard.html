@@ -1,1157 +1,573 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Urban Water Scarcity Prediction Tool</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaIntel | VisionOS Edition</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #000000;
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-main: #ffffff;
+      --text-muted: #8e8e93;
+      --accent: #00f2fe;
+      --accent-glow: rgba(0, 242, 254, 0.4);
+      --risk-low: #32d74b;
+      --risk-medium: #ffd60a;
+      --risk-high: #ff453a;
+      --risk-critical: #bf5af2;
+      --risk-severe: #ff3b30;
+      
+      --gradient-text: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle at 15% 50%, rgba(79, 172, 254, 0.15), transparent 25%),
+                        radial-gradient(circle at 85% 30%, rgba(191, 90, 242, 0.1), transparent 25%);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .vision-glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .vision-glass:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 40px rgba(0, 242, 254, 0.1);
+    }
+
+    header {
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(30px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: var(--gradient-text);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .main-grid {
+      padding: 30px 48px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 400px;
+      gap: 32px;
+      max-width: 1920px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1300px) {
+      .main-grid {
+        grid-template-columns: 1fr;
       }
+    }
 
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #333;
-        min-height: 100vh;
-        padding: 20px;
-      }
+    /* Map System */
+    .map-container {
+      height: 750px; /* Massively increased size so user can see all 50 cities clearly */
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+    }
 
-      .container {
-        max-width: 1400px;
-        margin: 0 auto;
-      }
+    #map { height: 100%; width: 100%; background: #000; }
 
-      header {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
-      }
+    /* Metric Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 32px;
+    }
 
-      h1 {
-        color: #667eea;
-        margin-bottom: 10px;
-        font-size: 2.5em;
-      }
+    .metric-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-      .subtitle {
-        color: #666;
-        font-size: 1.1em;
-      }
+    .metric-val {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin-top: 8px;
+    }
 
-      .dashboard {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-      }
+    /* Charts & Heatmap */
+    .chart-box {
+      height: 320px;
+      width: 100%;
+      margin-top: 20px;
+    }
 
-      .card {
-        background: white;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-      }
+    .heatmap-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+      align-items: flex-end;
+    }
 
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-      }
+    .heat-block {
+      flex: 1;
+      height: 40px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #000;
+      opacity: 0.9;
+      transition: transform 0.2s;
+    }
+    .heat-block:hover { transform: scale(1.05); }
 
-      .card-title {
-        font-size: 0.9em;
-        color: #666;
-        text-transform: uppercase;
-        margin-bottom: 10px;
-      }
+    /* Right Side Panels */
+    .risk-hero {
+      text-align: center;
+      padding: 30px 20px;
+      border-radius: 16px;
+      margin-top: 20px;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.05) 0%, transparent 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
 
-      .card-value {
-        font-size: 2em;
-        font-weight: bold;
-        color: #333;
-      }
+    .risk-hero-title {
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+    }
 
-      .card-unit {
-        font-size: 0.8em;
-        color: #999;
-        margin-top: 5px;
-      }
+    .risk-hero-val {
+      font-size: 3.5rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-top: 5px;
+    }
 
-      .status-card {
-        grid-column: 1 / -1;
-      }
+    /* Inputs & Buttons */
+    .vision-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .vision-input:focus {
+      border-color: var(--accent);
+      background: rgba(0, 242, 254, 0.05);
+    }
 
-      .status-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-      }
+    .vision-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--text-main);
+      color: var(--bg);
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s;
+    }
+    .vision-btn:hover {
+      background: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+      color: #000;
+    }
 
-      .status-info {
-        flex: 1;
-        min-width: 200px;
-      }
+    /* Custom range slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      background: rgba(255,255,255,0.1);
+      height: 4px;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--text-main);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
 
-      .risk-badge {
-        display: inline-block;
-        padding: 15px 30px;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 1.2em;
-        color: white;
-        margin-top: 10px;
-      }
+  <header>
+    <h1>AquaIntel <span style="font-weight:300; color:var(--text-muted); font-size: 1.2rem;">VisionOS</span></h1>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <div style="width:8px; height:8px; border-radius:50%; background:var(--risk-low); box-shadow:0 0 10px var(--risk-low);"></div>
+      <span style="font-size:0.9rem; font-weight:500;">Live Feed Active</span>
+    </div>
+  </header>
 
-      .risk-low {
-        background: #2ecc71;
-      }
-
-      .risk-medium {
-        background: #f39c12;
-      }
-
-      .risk-high {
-        background: #e74c3c;
-      }
-
-      .chart-container {
-        position: relative;
-        height: 300px;
-        margin: 20px 0;
-      }
-
-      .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-      }
-
-      .chart-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .prediction-form {
-        background: white;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
-      }
-
-      .form-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 15px;
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-      }
-
-      label {
-        margin-bottom: 5px;
-        font-weight: 600;
-        color: #333;
-      }
-
-      input[type="number"] {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-size: 1em;
-        transition: border-color 0.2s;
-      }
-
-      input[type="number"]:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
-      }
-
-      .button-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
-      button {
-        padding: 12px 25px;
-        border: none;
-        border-radius: 5px;
-        font-size: 1em;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: #667eea;
-        color: white;
-      }
-
-      .btn-primary:hover {
-        background: #5568d3;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-secondary {
-        background: #95a5a6;
-        color: white;
-      }
-
-      .btn-secondary:hover {
-        background: #7f8c8d;
-      }
-
-      .prediction-result {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 5px;
-        margin-top: 15px;
-        display: none;
-      }
-
-      .prediction-result.show {
-        display: block;
-      }
-
-      .forecast-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-top: 20px;
-      }
-
-      .forecast-item {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-        border-left: 4px solid #667eea;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-      }
-
-      .stat-item {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .stat-label {
-        color: #666;
-        font-size: 0.9em;
-        margin-bottom: 10px;
-      }
-
-      .stat-value {
-        font-size: 1.8em;
-        font-weight: bold;
-        color: #667eea;
-      }
-
-      .loading {
-        text-align: center;
-        color: #667eea;
-        font-weight: 600;
-      }
-
-      .error {
-        background: #ffe6e6;
-        border: 1px solid #ffcccc;
-        color: #c0392b;
-        padding: 15px;
-        border-radius: 5px;
-        margin: 15px 0;
-        display: none;
-      }
-
-      .error.show {
-        display: block;
-      }
-
-      .success {
-        background: #e6ffe6;
-        border: 1px solid #ccffcc;
-        color: #27ae60;
-        padding: 15px;
-        border-radius: 5px;
-        margin: 15px 0;
-        display: none;
-      }
-
-      .success.show {
-        display: block;
-      }
-
-      footer {
-        text-align: center;
-        color: white;
-        margin-top: 30px;
-        padding: 20px;
-      }
-
-      @media (max-width: 768px) {
-        h1 {
-          font-size: 1.8em;
-        }
-
-        .charts-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .dashboard {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>🌊 Urban Water Scarcity Prediction Tool</h1>
-        <p class="subtitle">
-          Real-time monitoring and forecasting system for urban water resources
-        </p>
-      </header>
-
-      <!-- Location & Area Selector -->
-      <div
-        style="
-          background: white;
-          padding: 25px;
-          border-radius: 10px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          margin-bottom: 30px;
-        "
-      >
-        <h2 style="margin-bottom: 20px; color: #333; font-size: 1.5em">
-          📍 Select City & Area
-        </h2>
-        <div
-          class="form-row"
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-          "
-        >
-          <div class="form-group">
-            <label
-              for="locationSelect"
-              style="font-weight: bold; color: #333; font-size: 1.1em"
-              >City</label
-            >
-            <select
-              id="locationSelect"
-              style="
-                width: 100%;
-                padding: 12px;
-                border: 2px solid #667eea;
-                border-radius: 5px;
-                font-size: 1em;
-                cursor: pointer;
-              "
-            >
-              <option value="" selected>-- Select a City --</option>
-            </select>
-          </div>
-          <div style="display: flex; align-items: flex-end">
-            <button
-              onclick="fetchLocationData()"
-              style="
-                background: #667eea;
-                color: white;
-                padding: 12px 30px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 1em;
-                font-weight: bold;
-                width: 100%;
-              "
-            >
-              🔍 Fetch Live Data
-            </button>
-          </div>
+  <div class="main-grid">
+    <!-- Left Column: Map & Metrics -->
+    <div style="display: flex; flex-direction: column; gap: 32px;">
+      
+      <div class="metric-grid">
+        <div class="vision-glass">
+          <div class="metric-title">Current Rainfall</div>
+          <div class="metric-val" id="metric-rain">--</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:5px;">Open-Meteo Sync</div>
         </div>
-
-        <!-- Live Location Data -->
-        <div id="liveLocationData" style="margin-top: 25px; display: none">
-          <h3
-            style="
-              color: #333;
-              margin-bottom: 15px;
-              border-bottom: 2px solid #667eea;
-              padding-bottom: 10px;
-            "
-          >
-            Live Data for
-            <span id="selectedCity" style="color: #667eea; font-weight: bold"
-              >--</span
-            >
-          </h3>
-
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 20px;
-              margin-bottom: 20px;
-            "
-          >
-            <div
-              style="
-                background: #f0f7ff;
-                padding: 15px;
-                border-radius: 8px;
-                border-left: 4px solid #667eea;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
-                Climate Zone
-              </div>
-              <div
-                style="font-size: 1.2em; font-weight: bold; color: #333"
-                id="climateZone"
-              >
-                --
-              </div>
-            </div>
-            <div
-              style="
-                background: #f0f7ff;
-                padding: 15px;
-                border-radius: 8px;
-                border-left: 4px solid #667eea;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
-                Population
-              </div>
-              <div
-                style="font-size: 1.2em; font-weight: bold; color: #333"
-                id="cityPopulation"
-              >
-                --
-              </div>
-            </div>
-            <div
-              style="
-                background: #f0f7ff;
-                padding: 15px;
-                border-radius: 8px;
-                border-left: 4px solid #667eea;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
-                Annual Rainfall
-              </div>
-              <div
-                style="font-size: 1.2em; font-weight: bold; color: #333"
-                id="annualRainfall"
-              >
-                --
-              </div>
-            </div>
-            <div
-              style="
-                background: #f0f7ff;
-                padding: 15px;
-                border-radius: 8px;
-                border-left: 4px solid #667eea;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em; margin-bottom: 5px">
-                Current Risk Level
-              </div>
-              <div
-                style="font-size: 1.2em; font-weight: bold; color: #333"
-                id="currentRiskLevel"
-              >
-                --
-              </div>
-            </div>
-          </div>
-
-          <div
-            style="
-              background: #fff3cd;
-              padding: 15px;
-              border-radius: 8px;
-              margin-bottom: 20px;
-            "
-          >
-            <strong style="color: #856404">Water Sources:</strong>
-            <span id="waterSources" style="color: #666">--</span>
-          </div>
-
-          <div style="background: #f8d7da; padding: 15px; border-radius: 8px">
-            <strong style="color: #721c24">Risk Factors:</strong>
-            <span id="riskFactors" style="color: #666">--</span>
-          </div>
-
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 20px;
-              margin-top: 20px;
-            "
-          >
-            <div
-              style="
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                border: 2px solid #e0e0e0;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em">Current Rainfall</div>
-              <div
-                style="font-size: 1.8em; font-weight: bold; color: #667eea"
-                id="liveRainfall"
-              >
-                --
-              </div>
-              <div style="color: #999; font-size: 0.85em">mm</div>
-            </div>
-            <div
-              style="
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                border: 2px solid #e0e0e0;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em">Groundwater Level</div>
-              <div
-                style="font-size: 1.8em; font-weight: bold; color: #667eea"
-                id="liveGroundwater"
-              >
-                --
-              </div>
-              <div style="color: #999; font-size: 0.85em">m</div>
-            </div>
-            <div
-              style="
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                border: 2px solid #e0e0e0;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em">Water Consumption</div>
-              <div
-                style="font-size: 1.8em; font-weight: bold; color: #667eea"
-                id="liveConsumption"
-              >
-                --
-              </div>
-              <div style="color: #999; font-size: 0.85em">Million L</div>
-            </div>
-            <div
-              style="
-                background: white;
-                padding: 15px;
-                border-radius: 8px;
-                border: 2px solid #e0e0e0;
-              "
-            >
-              <div style="color: #666; font-size: 0.9em">Scarcity Index</div>
-              <div
-                style="font-size: 1.8em; font-weight: bold; color: #667eea"
-                id="liveScarcityIndex"
-              >
-                --
-              </div>
-              <div style="color: #999; font-size: 0.85em">ratio</div>
-            </div>
-          </div>
-
-          <div
-            style="
-              margin-top: 20px;
-              padding: 15px;
-              background: #e8f5e9;
-              border-radius: 8px;
-              border-left: 4px solid #4caf50;
-            "
-          >
-            <strong>Last Updated:</strong>
-            <span id="lastUpdated" style="color: #666">--</span>
-          </div>
+        <div class="vision-glass">
+          <div class="metric-title">Groundwater</div>
+          <div class="metric-val" id="metric-gw">--<span style="font-size:1rem;">m</span></div>
+        </div>
+        <div class="vision-glass">
+          <div class="metric-title">Daily Consumption</div>
+          <div class="metric-val" id="metric-cons">--<span style="font-size:1rem;">ML</span></div>
         </div>
       </div>
 
-      <!-- Prediction Form -->
-      <div class="prediction-form">
-        <h2 style="margin-bottom: 20px; color: #333">Make a Prediction</h2>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="rainfall">Rainfall (mm)</label>
-            <input
-              type="number"
-              id="rainfall"
-              min="0"
-              max="100"
-              step="0.1"
-              value="10"
-            />
-          </div>
-          <div class="form-group">
-            <label for="groundwater">Groundwater Level (m)</label>
-            <input
-              type="number"
-              id="groundwater"
-              min="0"
-              max="1000"
-              step="1"
-              value="500"
-            />
-          </div>
-          <div class="form-group">
-            <label for="consumption">Water Consumption (Million L)</label>
-            <input
-              type="number"
-              id="consumption"
-              min="0"
-              max="200"
-              step="0.1"
-              value="50"
-            />
-          </div>
-          <div class="form-group">
-            <label for="population">Population</label>
-            <input
-              type="number"
-              id="population"
-              min="0"
-              step="1000"
-              value="1000000"
-            />
-          </div>
-        </div>
-        <div class="button-group">
-          <button class="btn-primary" onclick="makePrediction()">
-            🔮 Predict Risk Level
-          </button>
-          <button class="btn-secondary" onclick="loadCurrentData()">
-            📍 Use Current Data
-          </button>
-        </div>
-        <div id="predictionResult" class="prediction-result"></div>
-      </div>
-
-      <!-- Charts -->
-      <div class="charts-grid">
-        <div class="chart-card">
-          <h3 style="margin-bottom: 15px">Rainfall & Consumption Trend</h3>
-          <div class="chart-container">
-            <canvas id="rainfallChart"></canvas>
-          </div>
-        </div>
-        <div class="chart-card">
-          <h3 style="margin-bottom: 15px">Water Scarcity Index</h3>
-          <div class="chart-container">
-            <canvas id="scarcityChart"></canvas>
-          </div>
+      <div class="vision-glass">
+        <h2 style="font-size:1.4rem; font-weight:600;">30-Day Resource Trajectory</h2>
+        <div class="chart-box">
+          <canvas id="trendChart"></canvas>
         </div>
       </div>
-
-      <!-- Statistics -->
-      <div class="stats-grid" id="statsGrid" style="display: none">
-        <div class="stat-item">
-          <div class="stat-label">Average Rainfall</div>
-          <div class="stat-value" id="avgRainfall">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Average Groundwater</div>
-          <div class="stat-value" id="avgGroundwater">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Low Risk Days</div>
-          <div class="stat-value" id="lowRiskDays">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Medium Risk Days</div>
-          <div class="stat-value" id="mediumRiskDays">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">High Risk Days</div>
-          <div class="stat-value" id="highRiskDays">--</div>
-        </div>
-      </div>
-
-      <!-- Forecast -->
-      <div
-        style="
-          background: white;
-          padding: 25px;
-          border-radius: 10px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          margin-bottom: 30px;
-        "
-      >
-        <h2 style="margin-bottom: 20px; color: #333">7-Day Forecast</h2>
-        <div class="forecast-grid" id="forecastGrid">
-          <div class="loading">Loading forecast...</div>
-        </div>
-      </div>
-
-      <footer>
-        <p>
-          © 2026 Urban Water Scarcity Prediction Tool | Data-Driven Water
-          Management Solution
-        </p>
-      </footer>
+      
     </div>
 
-    <script>
-      let rainfallChartInstance = null;
-      let scarcityChartInstance = null;
+    <!-- Right Column: Analyst & Simulators -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      
+      <!-- Status Hero -->
+      <div class="vision-glass">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <h2 id="sel-city" style="font-size:2rem; font-weight:600;">System Wide</h2>
+            <div id="sel-pop" style="color:var(--text-muted); margin-top:4px;">Scanning...</div>
+          </div>
+        </div>
+        
+        <div class="risk-hero" id="risk-banner">
+          <div class="risk-hero-title">IMMEDIATE THREAT LEVEL</div>
+          <div class="risk-hero-val" id="risk-status">---</div>
+        </div>
 
-      // Initialize dashboard
-      async function initializeDashboard() {
-        console.log("Initializing dashboard...");
-        await loadLocations(); // Load locations first
-        await Promise.all([
-          loadHistoricalData(),
-          loadStatistics(),
-          loadForecast(),
-        ]);
-      }
+        <div style="margin-top:20px;">
+          <h4 style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase;">7-Day Prediction Heatmap</h4>
+          <div class="heatmap-row" id="forecast-heatmap">
+            <!-- Populated sequentially via JS -->
+          </div>
+        </div>
+      </div>
 
-      // Load available locations
-      async function loadLocations() {
+      <!-- NEW: AI Societal Impact Analyst -->
+      <div class="vision-glass" style="background:rgba(0, 242, 254, 0.03); border:1px solid rgba(0, 242, 254, 0.15);">
+        <h3 style="font-size:1.1rem; font-weight:600; color:var(--accent); display:flex; gap:10px; align-items:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 12 2.1 12"/><path d="M12 12 19.1 4.9"/></svg>
+          Multi-Factor AI Analyst
+        </h3>
+        
+        <div style="height: 160px; width: 100%; margin-top: 20px; margin-bottom: 0; display: none;" id="cause-chart-container">
+            <canvas id="causeChart"></canvas>
+        </div>
+
+        <div id="ai-insight" style="font-size:0.95rem; line-height:1.6; color:#d1d5db; margin-top:15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+          Awaiting spatial selection to commence root-cause analysis and societal projection.
+        </div>
+
+        <div id="ai-chat-history" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-top: 15px; padding-right: 5px;">
+            <div style="background: rgba(0, 242, 254, 0.1); padding: 10px 12px; border-radius: 8px; color: var(--text-main); font-size: 0.9rem; align-self: flex-start; max-width: 90%;">
+                <b>AquaIntel GenAI:</b> Hello! I am a fully context-aware AI running on Gemini. Ask me anything about the selected city's risk factors or the ML model!
+            </div>
+        </div>
+        <div style="display:flex; gap: 8px; margin-top: 15px;">
+            <input type="text" id="ai-chat-input" class="vision-input" style="padding: 10px 12px; font-size: 0.9rem; margin-top:0; border-radius: 8px;" placeholder="Ask the AI Analyst..." onkeypress="if(event.key==='Enter') sendChatQuery()">
+            <button class="vision-btn" style="margin-top:0; padding: 10px 14px; width: auto; border-radius: 8px; display:flex; align-items:center;" onclick="sendChatQuery()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FULL WIDTH MAP AT BOTTOM -->
+  <div style="padding: 0 48px 48px; max-width: 1920px; margin: 0 auto;">
+    <div class="vision-glass" style="position: relative;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h2 style="font-size:1.4rem; font-weight:600;">Geospatial Track & Trace</h2>
+        <div style="display:flex; gap: 10px; width: 350px;">
+            <input type="text" id="map-search" class="vision-input" style="padding: 8px 12px; font-size: 0.95rem; margin-top:0;" placeholder="Locate city manually (e.g. Mumbai)..." onkeypress="if(event.key==='Enter') searchCity()">
+            <button class="vision-btn" style="margin-top:0; padding: 8px 16px; width: auto;" onclick="searchCity()">Locate</button>
+        </div>
+      </div>
+      <div class="map-container" id="map" style="height: 60vh; min-height: 500px; border-radius: 12px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let map = null;
+    let markers = [];
+    let trendChart = null;
+    let causeChart = null;
+    let currentData = null;
+
+    const riskColors = {
+      'Low': 'var(--risk-low)',
+      'Medium': 'var(--risk-medium)',
+      'High': 'var(--risk-high)',
+      'Critical': 'var(--risk-critical)',
+      'Severe': 'var(--risk-severe)',
+      'Unknown': '#555'
+    };
+
+    function initMap() {
+      map = L.map('map', { zoomControl: false }).setView([22.5937, 78.9629], 5);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+    }
+
+    async function bootstrap() {
+      initMap();
+      fetch('/api/locations')
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                data.data.forEach(loc => {
+                    if(!loc.coordinates.lat) return;
+                    const clr = riskColors[loc.current_risk];
+                    const icon = L.divIcon({
+                        className: 'map-pulse',
+                        html: `<div style="width:16px; height:16px; border-radius:50%; background:${clr}; box-shadow:0 0 15px ${clr}; border:2px solid #fff;"></div>`,
+                        iconSize: [16,16], iconAnchor:[8,8]
+                    });
+                    
+                    const m = L.marker([loc.coordinates.lat, loc.coordinates.lon], {icon}).addTo(map);
+                    m.on('click', () => { selectCity(loc.name); map.flyTo([loc.coordinates.lat, loc.coordinates.lon], 10, {duration: 1.2}); });
+                    m.cityName = loc.name;
+                    markers.push(m);
+                });
+                
+                if(data.data.length > 0) selectCity(data.data[0].name);
+            }
+        });
+    }
+
+    async function sendChatQuery() {
+        const input = document.getElementById('ai-chat-input');
+        const query = input.value.trim();
+        if(!query) return;
+        
+        input.value = '';
+        const history = document.getElementById('ai-chat-history');
+        
+        // Add User Bubble
+        const uDiv = document.createElement('div');
+        uDiv.style = "background: rgba(255, 255, 255, 0.1); padding: 10px 12px; border-radius: 8px; color: #fff; font-size: 0.9rem; align-self: flex-end; max-width: 90%; line-height: 1.4;";
+        uDiv.innerHTML = `<b>You:</b> ${query}`;
+        history.appendChild(uDiv);
+        history.scrollTop = history.scrollHeight;
+        
+        // Fetch AI Response
         try {
-          const response = await fetch("/api/locations");
-          const result = await response.json();
-
-          if (result.status === "success") {
-            const locationSelect = document.getElementById("locationSelect");
-            locationSelect.innerHTML =
-              '<option value="" selected>-- Select a City --</option>';
-
-            result.data.forEach((location) => {
-              const option = document.createElement("option");
-              option.value = location.name;
-              option.textContent = `${location.name} (${location.climate})`;
-              locationSelect.appendChild(option);
+            const payload = {
+                message: query,
+                context: currentData
+            };
+            
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
             });
-
-            console.log("Locations loaded successfully");
-          }
-        } catch (error) {
-          console.error("Error loading locations:", error);
+            const data = await res.json();
+            
+            const aiDiv = document.createElement('div');
+            aiDiv.style = "background: rgba(0, 242, 254, 0.1); padding: 10px 12px; border-radius: 8px; color: var(--text-main); font-size: 0.9rem; align-self: flex-start; max-width: 90%; line-height: 1.5;";
+            aiDiv.innerHTML = `<b>AquaIntel:</b> ${data.response}`;
+            history.appendChild(aiDiv);
+            history.scrollTop = history.scrollHeight;
+            
+        } catch(e) {
+            console.error(e);
         }
+    }
+
+    function searchCity() {
+      const q = document.getElementById('map-search').value.trim().toLowerCase();
+      if(!q) return;
+      const match = markers.find(m => m.cityName.toLowerCase() === q);
+      if(match) {
+        map.flyTo(match.getLatLng(), 11, {duration: 1.5});
+        selectCity(match.cityName);
+      } else {
+        alert("City not found in the surveillance database.");
       }
+    }
 
-      // Fetch live location data
-      async function fetchLocationData() {
-        const locationSelect = document.getElementById("locationSelect");
-        const selectedLocation = locationSelect.value;
-
-        if (!selectedLocation) {
-          showError("Please select a city first");
-          return;
-        }
-
+    async function selectCity(name) {
+        document.getElementById('sel-city').innerText = name;
+        
         try {
-          const response = await fetch(
-            `/api/location/${selectedLocation}/data`,
-          );
-          const result = await response.json();
+            const res = await fetch(`/api/city/${name}/area/${name}/forecast`);
+            const data = await res.json();
+            
+            if(data.status === 'success') {
+                currentData = data;
+                
+                // Set text
+                document.getElementById('sel-pop').innerText = `Pop: ${data.latest_measurement.population || 'Unknown'} | Tracking Nodes Linked`;
+                
+                // Numbers
+                document.getElementById('metric-rain').innerText = data.latest_measurement.rainfall_mm.toFixed(1);
+                document.getElementById('metric-gw').innerHTML = data.latest_measurement.groundwater_level_m.toFixed(1) + '<span style="font-size:1rem;color:#8e8e93">m</span>';
+                document.getElementById('metric-cons').innerHTML = data.latest_measurement.scarcity_index.toFixed(1) + '<span style="font-size:1rem;color:#8e8e93"> Index</span>';
+                
+                // Banner & Color
+                const risk = data.latest_measurement.risk_level;
+                const rColor = riskColors[risk];
+                document.getElementById('risk-status').innerText = risk;
+                document.getElementById('risk-status').style.color = rColor;
+                document.getElementById('risk-banner').style.borderColor = rColor;
+                document.getElementById('risk-banner').style.boxShadow = `inset 0 0 30px ${rColor}33`;
 
-          if (result.status === "success") {
-            const data = result;
-            const areaInfo = data.area_info;
-            const liveData = data.live_data;
-            const stats = data.statistics;
+                // Heatmap logic for 7 Days
+                const heatmapDiv = document.getElementById('forecast-heatmap');
+                heatmapDiv.innerHTML = '';
+                
+                data.forecast_7days.forEach(day => {
+                    const block = document.createElement('div');
+                    block.className = 'heat-block';
+                    // Grab first char of day e.g. "2026-03-31" to day name
+                    let dObj = new Date(day.date);
+                    block.innerText = dObj.toLocaleDateString('en-US', {weekday:'short'}).substring(0,1);
+                    block.style.background = day.risk_color;
+                    block.title = `${day.date}: ${day.risk_level}`;
+                    heatmapDiv.appendChild(block);
+                });
+                
+                // Fetch basic API endpoint for AI insights mapping (fallback logic)
+                fetch(`/api/location/${name}/data`)
+                .then(r => r.json())
+                .then(d2 => {
+                    if(d2.status==='success' && d2.ai_insight) {
+                        const box = document.getElementById('ai-insight');
+                        box.style.opacity = 0;
+                        setTimeout(() => {
+                            box.innerHTML = d2.ai_insight.replace('<b>','<b style="color:var(--text-main)">');
+                            box.style.opacity = 1;
+                        }, 200);
+                        updateChart(d2.trending_data);
+                        if(d2.cause_breakdown) {
+                            updateCauseChart(d2.cause_breakdown);
+                        }
+                    }
+                });
+            }
+        } catch(e) { console.warn(e); }
+    }
 
-            // Update location data section
-            document.getElementById("selectedCity").textContent = areaInfo.city;
-            document.getElementById("climateZone").textContent =
-              areaInfo.climate_zone;
-            document.getElementById("cityPopulation").textContent =
-              (areaInfo.population / 1000000).toFixed(2) + "M";
-            document.getElementById("annualRainfall").textContent =
-              areaInfo.annual_rainfall + " mm/year";
-            document.getElementById("waterSources").textContent =
-              areaInfo.water_sources.join(", ");
-            document.getElementById("riskFactors").textContent =
-              areaInfo.risk_factors.join(", ");
-
-            // Update live data
-            document.getElementById("liveRainfall").textContent =
-              liveData.rainfall_mm.toFixed(2);
-            document.getElementById("liveGroundwater").textContent =
-              liveData.groundwater_level_m.toFixed(2);
-            document.getElementById("liveConsumption").textContent =
-              liveData.water_consumption_mliters.toFixed(2);
-            document.getElementById("liveScarcityIndex").textContent =
-              liveData.scarcity_index.toFixed(2);
-
-            // Update current risk level with color
-            const riskLevelDiv = document.getElementById("currentRiskLevel");
-            riskLevelDiv.textContent = liveData.risk_level;
-            riskLevelDiv.style.color = getRiskColor(liveData.risk_level);
-
-            // Update last updated
-            document.getElementById("lastUpdated").textContent =
-              liveData.date + " | Risk Level: " + liveData.risk_level;
-
-            // Show the live data section
-            document.getElementById("liveLocationData").style.display = "block";
-
-            showSuccess(`Live data loaded for ${selectedLocation}`);
-          } else {
-            showError(result.message || "Failed to load location data");
-          }
-        } catch (error) {
-          console.error("Error fetching location data:", error);
-          showError("Failed to fetch live location data");
-        }
-      }
-
-      // Get risk color
-      function getRiskColor(riskLevel) {
-        const colors = {
-          Low: "#27ae60",
-          Medium: "#f39c12",
-          High: "#e74c3c",
-        };
-        return colors[riskLevel] || "#333";
-      }
-
-      // Load current status
-
-      // Load historical data and update charts
-      async function loadHistoricalData() {
-        try {
-          const response = await fetch("/api/historical-data?days=30");
-          const result = await response.json();
-
-          if (result.status === "success") {
-            const data = result.data;
-
-            // Update rainfall chart
-            updateRainfallChart(data);
-
-            // Update scarcity chart
-            updateScarcityChart(data);
-          }
-        } catch (error) {
-          console.error("Error loading historical data:", error);
-        }
-      }
-
-      // Update rainfall chart
-      function updateRainfallChart(data) {
-        const ctx = document.getElementById("rainfallChart").getContext("2d");
-
-        if (rainfallChartInstance) {
-          rainfallChartInstance.destroy();
-        }
-
-        rainfallChartInstance = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: data.dates,
-            datasets: [
-              {
-                label: "Rainfall (mm)",
-                data: data.rainfall,
-                borderColor: "#3498db",
-                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                tension: 0.4,
-                yAxisID: "y",
-              },
-              {
-                label: "Consumption (ML)",
-                data: data.consumption,
-                borderColor: "#e74c3c",
-                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                tension: 0.4,
-                yAxisID: "y1",
-              },
-            ],
-          },
-          options: {
+    function updateCauseChart(breakdown) {
+      document.getElementById('cause-chart-container').style.display = 'block';
+      if(causeChart) causeChart.destroy();
+      const ctx = document.getElementById('causeChart').getContext('2d');
+      
+      causeChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Low Rainfall', 'High Usage', 'Industry', 'Urbanization', 'Leakage/Infra'],
+            datasets: [{
+                data: [breakdown.climate, breakdown.usage, breakdown.industry, breakdown.urbanization, breakdown.leakage],
+                backgroundColor: ['#ff453a', '#ffd60a', '#ff9f0a', '#bf5af2', '#0a84ff'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-              mode: "index",
-              intersect: false,
-            },
+            cutout: '75%',
+            plugins: {
+                legend: { position: 'right', labels: { color: '#d1d5db', font: {size: 11} } }
+            }
+        }
+      });
+    }
+
+    function updateChart(trending) {
+      if(trendChart) trendChart.destroy();
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      const grad = ctx.createLinearGradient(0,0,0,300);
+      grad.addColorStop(0, 'rgba(0, 242, 254, 0.4)');
+      grad.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+
+      trendChart = new Chart(ctx, {
+        type:'line',
+        data: {
+            labels: trending.dates.map(d => d.slice(-5)),
+            datasets:[{
+                label:'Rainfall (mm)',
+                data: trending.rainfall,
+                borderColor: '#00f2fe',
+                backgroundColor: grad, fill:true, tension:0.4,
+                borderWidth: 2, pointRadius: 0
+            }]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: {legend:{display:false}},
             scales: {
-              y: {
-                type: "linear",
-                display: true,
-                position: "left",
-                title: { display: true, text: "Rainfall (mm)" },
-              },
-              y1: {
-                type: "linear",
-                display: true,
-                position: "right",
-                title: { display: true, text: "Consumption (ML)" },
-                grid: { drawOnChartArea: false },
-              },
-            },
-          },
-        });
-      }
-
-      // Update scarcity chart
-      function updateScarcityChart(data) {
-        const ctx = document.getElementById("scarcityChart").getContext("2d");
-
-        if (scarcityChartInstance) {
-          scarcityChartInstance.destroy();
+                x: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#8e8e93'}},
+                y: {grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#8e8e93'}}
+            }
         }
+      });
+    }
 
-        const colors = data.risk_levels.map((level) => {
-          switch (level) {
-            case "Low":
-              return "#2ecc71";
-            case "Medium":
-              return "#f39c12";
-            case "High":
-              return "#e74c3c";
-            default:
-              return "#95a5a6";
-          }
-        });
-
-        scarcityChartInstance = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: data.dates,
-            datasets: [
-              {
-                label: "Scarcity Index",
-                data: data.scarcity_index,
-                backgroundColor: colors,
-                borderColor: colors,
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: "Scarcity Index" },
-              },
-            },
-          },
-        });
-      }
-
-      // Load statistics
-      async function loadStatistics() {
-        try {
-          const response = await fetch("/api/statistics");
-          const result = await response.json();
-
-          if (result.status === "success") {
-            const data = result.data;
-            document.getElementById("avgRainfall").textContent =
-              data.rainfall.avg.toFixed(2);
-            document.getElementById("avgGroundwater").textContent =
-              data.groundwater.avg.toFixed(2);
-            document.getElementById("lowRiskDays").textContent =
-              data.risk_distribution.Low;
-            document.getElementById("mediumRiskDays").textContent =
-              data.risk_distribution.Medium;
-            document.getElementById("highRiskDays").textContent =
-              data.risk_distribution.High;
-            document.getElementById("statsGrid").style.display = "grid";
-          }
-        } catch (error) {
-          console.error("Error loading statistics:", error);
-        }
-      }
-
-      // Load forecast
-      async function loadForecast() {
-        try {
-          const response = await fetch("/api/forecast");
-          const result = await response.json();
-
-          if (result.status === "success") {
-            const forecastData = result.data;
-            const forecastGrid = document.getElementById("forecastGrid");
-            forecastGrid.innerHTML = forecastData
-              .map(
-                (item) => `
-                        <div class="forecast-item">
-                            <div style="font-weight: 600; margin-bottom: 10px;">${item.date}</div>
-                            <div style="margin-bottom: 8px;">Rain: ${item.rainfall.toFixed(1)}mm</div>
-                            <div class="risk-badge ${`risk-${item.risk_level.toLowerCase()}`}" style="display: block; margin: 10px 0;">
-                                ${item.risk_level}
-                            </div>
-                        </div>
-                    `,
-              )
-              .join("");
-          }
-        } catch (error) {
-          console.error("Error loading forecast:", error);
-        }
-      }
-
-      // Make prediction
-      async function makePrediction() {
-        const rainfall = parseFloat(document.getElementById("rainfall").value);
-        const groundwater = parseFloat(
-          document.getElementById("groundwater").value,
-        );
-        const consumption = parseFloat(
-          document.getElementById("consumption").value,
-        );
-        const population = parseFloat(
-          document.getElementById("population").value,
-        );
-
-        try {
-          const response = await fetch("/api/predict", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              rainfall,
-              groundwater,
-              consumption,
-              population,
-            }),
-          });
-
-          const result = await response.json();
-          displayPredictionResult(result);
-        } catch (error) {
-          console.error("Error making prediction:", error);
-          showError("Error making prediction. Please try again.");
-        }
-      }
-
-      // Display prediction result
-      function displayPredictionResult(result) {
-        const resultDiv = document.getElementById("predictionResult");
-
-        if (result.status === "success") {
-          const data = result.data;
-          const riskClass = `risk-${data.prediction.toLowerCase()}`;
-
-          resultDiv.innerHTML = `
-                    <div style="border-left: 5px solid ${data.risk_color}; padding: 15px;">
-                        <h3 style="margin-bottom: 15px;">Prediction Result</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                            <div>
-                                <strong>Predicted Risk Level:</strong>
-                                <div class="risk-badge ${riskClass}" style="display: block; margin-top: 10px;">
-                                    ${data.prediction}
-                                </div>
-                            </div>
-                            <div>
-                                <strong>Confidence:</strong>
-                                <div style="font-size: 1.5em; color: #667eea; margin-top: 10px;">
-                                    ${data.confidence.toFixed(2)}%
-                                </div>
-                            </div>
-                        </div>
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                            <strong>Risk Probabilities:</strong>
-                            <div style="margin-top: 10px;">
-                                Low: <strong style="color: #2ecc71;">${data.probabilities.Low.toFixed(2)}%</strong>
-                            </div>
-                            <div>
-                                Medium: <strong style="color: #f39c12;">${data.probabilities.Medium.toFixed(2)}%</strong>
-                            </div>
-                            <div>
-                                High: <strong style="color: #e74c3c;">${data.probabilities.High.toFixed(2)}%</strong>
-                            </div>
-                        </div>
-                        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; border-left: 4px solid #2ecc71;">
-                            <strong>📋 Recommendation:</strong>
-                            <p style="margin-top: 10px;">${data.recommendation}</p>
-                        </div>
-                    </div>
-                `;
-          resultDiv.classList.add("show");
-        }
-      }
-
-      // Load current data for prediction
-      async function loadCurrentData() {
-        try {
-          const response = await fetch("/api/current-status");
-          const result = await response.json();
-
-          if (result.status === "success") {
-            const data = result.data;
-            document.getElementById("rainfall").value =
-              data.rainfall.toFixed(2);
-            document.getElementById("groundwater").value =
-              data.groundwater.toFixed(2);
-            document.getElementById("consumption").value =
-              data.consumption.toFixed(2);
-            document.getElementById("population").value = data.population;
-
-            showSuccess("Current data loaded successfully!");
-          }
-        } catch (error) {
-          console.error("Error loading current data:", error);
-          showError("Failed to load current data");
-        }
-      }
-
-      // Helper functions
-      function showError(message) {
-        const errorDiv = document.createElement("div");
-        errorDiv.className = "error show";
-        errorDiv.textContent = "❌ " + message;
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 3000);
-      }
-
-      function showSuccess(message) {
-        const successDiv = document.createElement("div");
-        successDiv.className = "success show";
-        successDiv.textContent = "✓ " + message;
-        document.body.appendChild(successDiv);
-        setTimeout(() => successDiv.remove(), 3000);
-      }
-
-      // Initialize on page load
-      document.addEventListener("DOMContentLoaded", initializeDashboard);
-
-      // Refresh data every 5 minutes
-      setInterval(loadHistoricalData, 300000);
-    </script>
-  </body>
+    window.onload = bootstrap;
+  </script>
+</body>
 </html>

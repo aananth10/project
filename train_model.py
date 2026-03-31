@@ -180,7 +180,7 @@ def create_prediction_function():
 
             # Scale numerical features
             features_scaled = features.copy()
-            features_scaled[:, 1:] = scaler.transform(features[:, 1:])  # Scale only numerical columns
+            features_scaled[:, 1:5] = scaler.transform(features[:, 1:5])  # Scale only 4 numerical columns
 
             # Make prediction
             prediction = model.predict(features_scaled)[0]

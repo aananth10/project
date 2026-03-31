@@ -19,10 +19,16 @@ class RealTimeDataFetcher:
         self.api_keys = api_keys or {}
         self.cache = {}
         self.cache_timeout = 300  # 5 minutes
+        self.persistence_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'realtime_latest.json')
+
+        # Ensure directory exists
+        project_data_dir = os.path.dirname(self.persistence_file)
+        if not os.path.exists(project_data_dir):
+            os.makedirs(project_data_dir, exist_ok=True)
 
     def get_weather_data(self, lat: float, lon: float, location_name: str) -> Dict:
         """
-        Fetch real-time weather data from OpenWeatherMap API
+        Fetch real-time weather data from Open-Meteo API (Free, no auth)
         Returns: temperature, humidity, rainfall, evaporation estimate
         """
         cache_key = f"weather_{location_name}"
@@ -31,24 +37,21 @@ class RealTimeDataFetcher:
             return self.cache[cache_key]
 
         try:
-            api_key = self.api_keys.get('openweather', os.getenv('OPENWEATHER_API_KEY'))
-            if not api_key:
-                return self._get_simulated_weather(lat, lon, location_name)
-
-            url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
+            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,precipitation,surface_pressure,wind_speed_10m,cloud_cover"
             response = requests.get(url, timeout=10)
             data = response.json()
 
-            if response.status_code == 200:
+            if response.status_code == 200 and 'current' in data:
+                current = data['current']
                 weather_data = {
-                    'temperature': data['main']['temp'],
-                    'humidity': data['main']['humidity'],
-                    'rainfall_mm': data.get('rain', {}).get('1h', 0) * 1000,  # Convert m to mm
-                    'pressure': data['main']['pressure'],
-                    'wind_speed': data['wind']['speed'],
-                    'cloud_cover': data['clouds']['all'],
+                    'temperature': current.get('temperature_2m', 25.0),
+                    'humidity': current.get('relative_humidity_2m', 60.0),
+                    'rainfall_mm': current.get('precipitation', 0.0),
+                    'pressure': current.get('surface_pressure', 1013.0),
+                    'wind_speed': current.get('wind_speed_10m', 0.0),
+                    'cloud_cover': current.get('cloud_cover', 0),
                     'timestamp': datetime.now(),
-                    'source': 'OpenWeatherMap'
+                    'source': 'Open-Meteo'
                 }
 
                 # Estimate evaporation based on temperature and humidity
@@ -60,7 +63,7 @@ class RealTimeDataFetcher:
                 self.cache[cache_key] = weather_data
                 return weather_data
             else:
-                print(f"OpenWeather API error: {data.get('message', 'Unknown error')}")
+                print(f"Open-Meteo API error: {data}")
                 return self._get_simulated_weather(lat, lon, location_name)
 
         except Exception as e:
@@ -235,7 +238,12 @@ class RealTimeDataFetcher:
             if not location_info:
                 return {'error': f'Location {location_name} not found'}
 
-            lat, lon = location_info['lat'], location_info['lon']
+            # Get lat/lon from the first area if areas exist, otherwise from location
+            if 'areas' in location_info and location_info['areas']:
+                first_area = list(location_info['areas'].values())[0]
+                lat, lon = first_area['lat'], first_area['lon']
+            else:
+                lat, lon = location_info.get('lat'), location_info.get('lon')
 
             # Fetch all data sources
             weather = self.get_weather_data(lat, lon, location_name)
@@ -248,7 +256,7 @@ class RealTimeDataFetcher:
             # Combine into comprehensive dataset
             realtime_data = {
                 'location': location_name,
-                'timestamp': datetime.now(),
+                'timestamp': datetime.now().isoformat(),
                 'weather': weather,
                 'water_quality': water_quality,
                 'reservoir': reservoir,
@@ -264,6 +272,9 @@ class RealTimeDataFetcher:
                     satellite.get('source', 'Unknown')
                 ]
             }
+
+            # Persist latest data
+            self._persist_realtime_data(location_name, realtime_data)
 
             return realtime_data
 
@@ -293,6 +304,39 @@ class RealTimeDataFetcher:
         temp_factor = (temperature - 20) / 10  # Higher temp = more evaporation
         humidity_factor = (100 - humidity) / 20  # Lower humidity = more evaporation
         return max(0.5, base_evaporation + temp_factor - humidity_factor + np.random.normal(0, 0.5))
+
+    def _persist_realtime_data(self, location_name: str, realtime_data: Dict):
+        """Persist the latest realtime data to a json file."""
+        try:
+            existing_data = {}
+            if os.path.exists(self.persistence_file):
+                with open(self.persistence_file, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+
+            existing_data[location_name] = realtime_data
+
+            with open(self.persistence_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, indent=2, default=str)
+
+        except Exception as e:
+            print(f"Error persisting realtime data for {location_name}: {e}")
+
+    def get_persisted_realtime_data(self, location_name: str = None) -> Dict:
+        """Return persisted realtime data. If location_name is None, return all."""
+        if not os.path.exists(self.persistence_file):
+            return {}
+
+        try:
+            with open(self.persistence_file, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+
+            if location_name:
+                return existing_data.get(location_name, {})
+            return existing_data
+
+        except Exception as e:
+            print(f"Error reading persisted realtime data: {e}")
+            return {}
 
     def _is_cache_valid(self, cache_key: str) -> bool:
         """Check if cached data is still valid"""

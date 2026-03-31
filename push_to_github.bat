@@ -5,7 +5,7 @@ REM Run this AFTER creating your GitHub repository
 echo 🚀 Pushing Enhanced Water Scarcity Tool to GitHub...
 echo.
 
-set /p github_url="Enter your GitHub repository URL (https://github.com/aananth10/enhanced-water-scarcity-tool .git): "
+set /p github_url="Enter your GitHub repository URL (https://github.com/aananth10/enhanced-water-scarcity-tool.git): "
 
 echo 🔗 Connecting to GitHub repository...
 git remote add origin %github_url%

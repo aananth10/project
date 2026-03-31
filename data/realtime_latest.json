@@ -1,0 +1,546 @@
+{
+  "Mumbai": {
+    "location": "Mumbai",
+    "timestamp": "2026-03-31T14:32:34.993883",
+    "weather": {
+      "temperature": 29.1,
+      "humidity": 73,
+      "rainfall_mm": 0.0,
+      "pressure": 1007.9,
+      "wind_speed": 13.0,
+      "cloud_cover": 3,
+      "timestamp": "2026-03-31 14:32:34.990867",
+      "source": "Open-Meteo",
+      "evaporation_mm": 3.7425158997786143
+    },
+    "water_quality": {
+      "tds_ppm": 442.5077075974831,
+      "ph_level": 6.92509071400342,
+      "turbidity_ntu": 0.6848542841860965,
+      "dissolved_oxygen": 9.176156871808102,
+      "conductivity": 483.9995591700337,
+      "timestamp": "2026-03-31 14:32:34.992879",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 51.56185484829237,
+      "storage_volume_mcm": 589.4225024289672,
+      "inflow_cusecs": 1037.927971724902,
+      "outflow_cusecs": 1152.512972894229,
+      "timestamp": "2026-03-31 14:32:34.993883",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 1.4874780171096949,
+      "crop_water_requirement": 5.133433287891197,
+      "irrigation_efficiency": 0.7124532262930976,
+      "soil_moisture_percent": 62.06297228382074,
+      "vegetation_index": 0.4370444624250522,
+      "timestamp": "2026-03-31 14:32:34.993883",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 9.363163041964789,
+      "recycling_rate": 0.42038503796620946,
+      "discharge_quality_ph": 6.664790290369035,
+      "discharge_tds_ppm": 901.6378902379832,
+      "operational_hours": 17.749513916149585,
+      "timestamp": "2026-03-31 14:32:34.993883",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 43.58762678368045,
+      "vegetation_index": 0.27899303452114455,
+      "land_surface_temp": 26.79315022057608,
+      "evapotranspiration_mm": 1.0116263251958815,
+      "precipitation_mm": 3.1119705121650316,
+      "cloud_cover_percent": 57.96651373434574,
+      "timestamp": "2026-03-31 14:32:34.993883",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Delhi": {
+    "location": "Delhi",
+    "timestamp": "2026-03-31T13:29:09.544208",
+    "weather": {
+      "temperature": 31.1,
+      "humidity": 37,
+      "rainfall_mm": 0.0,
+      "pressure": 985.2,
+      "wind_speed": 8.7,
+      "cloud_cover": 100,
+      "timestamp": "2026-03-31 13:29:09.542145",
+      "source": "Open-Meteo",
+      "evaporation_mm": 1.890891326577565
+    },
+    "water_quality": {
+      "tds_ppm": 358.6253905909762,
+      "ph_level": 6.86310926318454,
+      "turbidity_ntu": 1.3582443662106232,
+      "dissolved_oxygen": 7.683223102211968,
+      "conductivity": 417.49859723274085,
+      "timestamp": "2026-03-31 13:29:09.544208",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 66.77221592413544,
+      "storage_volume_mcm": 680.7756826558875,
+      "inflow_cusecs": 1179.072019669485,
+      "outflow_cusecs": 979.781360109821,
+      "timestamp": "2026-03-31 13:29:09.544208",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 5.324224107969489,
+      "crop_water_requirement": 5.699172902365976,
+      "irrigation_efficiency": 0.7343045444795503,
+      "soil_moisture_percent": 41.33318685755562,
+      "vegetation_index": 0.27466204136466404,
+      "timestamp": "2026-03-31 13:29:09.544208",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 4.216996862052672,
+      "recycling_rate": 0.4068760822470847,
+      "discharge_quality_ph": 5.817118229978056,
+      "discharge_tds_ppm": 645.2534526778526,
+      "operational_hours": 20.953201087863345,
+      "timestamp": "2026-03-31 13:29:09.544208",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 42.15704786195226,
+      "vegetation_index": 0.6683208670367788,
+      "land_surface_temp": 25.511599329564874,
+      "evapotranspiration_mm": 4.384765835895423,
+      "precipitation_mm": 2.6035066396858455,
+      "cloud_cover_percent": 51.16500578635104,
+      "timestamp": "2026-03-31 13:29:09.544208",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Bangalore": {
+    "location": "Bangalore",
+    "timestamp": "2026-03-30T11:53:22.760629",
+    "weather": {
+      "temperature": 25.6501917219286,
+      "humidity": 83.43678145428328,
+      "rainfall_mm": 0.054755072002288886,
+      "evaporation_mm": 1.6351867423986675,
+      "pressure": 1015.9054513020916,
+      "wind_speed": 2.629689186875005,
+      "cloud_cover": 6.525021151487486,
+      "timestamp": "2026-03-30 11:53:22.760629",
+      "source": "Simulated Weather"
+    },
+    "water_quality": {
+      "tds_ppm": 301.9330151954056,
+      "ph_level": 7.329267050003556,
+      "turbidity_ntu": 0.45321935484032805,
+      "dissolved_oxygen": 7.439363816343094,
+      "conductivity": 350.8957360000217,
+      "timestamp": "2026-03-30 11:53:22.760629",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 79.23216364967861,
+      "storage_volume_mcm": 576.6691437160484,
+      "inflow_cusecs": 1160.7178051234657,
+      "outflow_cusecs": 718.1580905736419,
+      "timestamp": "2026-03-30 11:53:22.760629",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 4.485791068529496,
+      "crop_water_requirement": 5.285654276331831,
+      "irrigation_efficiency": 0.6779637553666459,
+      "soil_moisture_percent": 21.533726615257095,
+      "vegetation_index": 0.5238852978026844,
+      "timestamp": "2026-03-30 11:53:22.760629",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 4.660183701630895,
+      "recycling_rate": 0.47517346102663377,
+      "discharge_quality_ph": 6.339071951870154,
+      "discharge_tds_ppm": 1012.6595269159848,
+      "operational_hours": 17.067798867473996,
+      "timestamp": "2026-03-30 11:53:22.760629",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 36.51186011034398,
+      "vegetation_index": 0.26058687083627985,
+      "land_surface_temp": 35.02946377693385,
+      "evapotranspiration_mm": 3.7558541805444774,
+      "precipitation_mm": -1.381168100093758,
+      "cloud_cover_percent": 33.44567574627916,
+      "timestamp": "2026-03-30 11:53:22.760629",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Simulated Weather",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Ahmedabad": {
+    "location": "Ahmedabad",
+    "timestamp": "2026-03-30T13:35:21.746805",
+    "weather": {
+      "temperature": 35.5,
+      "humidity": 36,
+      "rainfall_mm": 0.1,
+      "pressure": 1002.5,
+      "wind_speed": 11.3,
+      "cloud_cover": 100,
+      "timestamp": "2026-03-30 13:35:21.744760",
+      "source": "Open-Meteo",
+      "evaporation_mm": 2.5963363061938964
+    },
+    "water_quality": {
+      "tds_ppm": 475.4371642188851,
+      "ph_level": 6.780851959869414,
+      "turbidity_ntu": 1.7263592554780738,
+      "dissolved_oxygen": 9.630855355655022,
+      "conductivity": 407.4767898387049,
+      "timestamp": "2026-03-30 13:35:21.746805",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 73.9125575042212,
+      "storage_volume_mcm": 548.0882813060849,
+      "inflow_cusecs": 859.2292226279147,
+      "outflow_cusecs": 654.7770836306786,
+      "timestamp": "2026-03-30 13:35:21.746805",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 5.047081859941057,
+      "crop_water_requirement": 4.091112979070283,
+      "irrigation_efficiency": 0.5403360301690842,
+      "soil_moisture_percent": 53.871738730704365,
+      "vegetation_index": 0.39101739861757423,
+      "timestamp": "2026-03-30 13:35:21.746805",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 4.146051235885081,
+      "recycling_rate": 0.3967882314898851,
+      "discharge_quality_ph": 7.247146717853682,
+      "discharge_tds_ppm": 820.6184866541248,
+      "operational_hours": 20.266615330475844,
+      "timestamp": "2026-03-30 13:35:21.746805",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 40.792550166352605,
+      "vegetation_index": 0.3208375577292377,
+      "land_surface_temp": 31.953328241420216,
+      "evapotranspiration_mm": 2.899190158610346,
+      "precipitation_mm": 5.666974919049088,
+      "cloud_cover_percent": 69.38030493508327,
+      "timestamp": "2026-03-30 13:35:21.746805",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Patna": {
+    "location": "Patna",
+    "timestamp": "2026-03-31T13:17:31.721828",
+    "weather": {
+      "temperature": 32.1,
+      "humidity": 58,
+      "rainfall_mm": 0.0,
+      "pressure": 1001.5,
+      "wind_speed": 3.0,
+      "cloud_cover": 98,
+      "timestamp": "2026-03-31 13:17:31.719270",
+      "source": "Open-Meteo",
+      "evaporation_mm": 3.2368065191053716
+    },
+    "water_quality": {
+      "tds_ppm": 324.1551052861697,
+      "ph_level": 6.7915029459604845,
+      "turbidity_ntu": 2.97200722521058,
+      "dissolved_oxygen": 7.998069063767267,
+      "conductivity": 433.4661477169074,
+      "timestamp": "2026-03-31 13:17:31.721828",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 57.791137904052846,
+      "storage_volume_mcm": 597.3991776624773,
+      "inflow_cusecs": 1031.3662810716833,
+      "outflow_cusecs": 934.076240526455,
+      "timestamp": "2026-03-31 13:17:31.721828",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 3.377632754820259,
+      "crop_water_requirement": 5.362948345898589,
+      "irrigation_efficiency": 0.6969159390569183,
+      "soil_moisture_percent": 44.9369065135605,
+      "vegetation_index": 0.29215417883164513,
+      "timestamp": "2026-03-31 13:17:31.721828",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 4.738673696991073,
+      "recycling_rate": 0.4433135492209377,
+      "discharge_quality_ph": 7.001193711818956,
+      "discharge_tds_ppm": 693.5950511196329,
+      "operational_hours": 16.556093803622506,
+      "timestamp": "2026-03-31 13:17:31.721828",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 39.777400874361994,
+      "vegetation_index": 0.6334694747607869,
+      "land_surface_temp": 26.342601230717285,
+      "evapotranspiration_mm": 3.4819863030258595,
+      "precipitation_mm": -0.4285590306800584,
+      "cloud_cover_percent": 9.44116193507826,
+      "timestamp": "2026-03-31 13:17:31.721828",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Kolkata": {
+    "location": "Kolkata",
+    "timestamp": "2026-03-31T13:23:58.284472",
+    "weather": {
+      "temperature": 32.0,
+      "humidity": 67,
+      "rainfall_mm": 0.1,
+      "pressure": 1007.8,
+      "wind_speed": 4.0,
+      "cloud_cover": 100,
+      "timestamp": "2026-03-31 13:23:58.281967",
+      "source": "Open-Meteo",
+      "evaporation_mm": 4.249963035631717
+    },
+    "water_quality": {
+      "tds_ppm": 258.02345774943564,
+      "ph_level": 7.535060801646446,
+      "turbidity_ntu": 2.27790189851511,
+      "dissolved_oxygen": 9.743983888716105,
+      "conductivity": 483.12059578424737,
+      "timestamp": "2026-03-31 13:23:58.284472",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 74.50879171960285,
+      "storage_volume_mcm": 435.76966202572316,
+      "inflow_cusecs": 725.4022272267357,
+      "outflow_cusecs": 1284.7233216261277,
+      "timestamp": "2026-03-31 13:23:58.284472",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 4.556334867268003,
+      "crop_water_requirement": 5.20785558197494,
+      "irrigation_efficiency": 0.7920752053345292,
+      "soil_moisture_percent": 55.80777647678178,
+      "vegetation_index": 0.2997592531931035,
+      "timestamp": "2026-03-31 13:23:58.284472",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 4.050550813203106,
+      "recycling_rate": 0.4369841306998462,
+      "discharge_quality_ph": 6.734192083210768,
+      "discharge_tds_ppm": 787.1037732596652,
+      "operational_hours": 17.525659810672348,
+      "timestamp": "2026-03-31 13:23:58.284472",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 55.040261518732365,
+      "vegetation_index": 0.5721894013032681,
+      "land_surface_temp": 28.453195658483438,
+      "evapotranspiration_mm": 2.5286674800947258,
+      "precipitation_mm": 9.25960553770761,
+      "cloud_cover_percent": 50.677476815278204,
+      "timestamp": "2026-03-31 13:23:58.284472",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Chennai": {
+    "location": "Chennai",
+    "timestamp": "2026-03-31T13:29:02.466014",
+    "weather": {
+      "temperature": 33.6,
+      "humidity": 51,
+      "rainfall_mm": 0.0,
+      "pressure": 1007.4,
+      "wind_speed": 9.7,
+      "cloud_cover": 55,
+      "timestamp": "2026-03-31 13:29:02.462684",
+      "source": "Open-Meteo",
+      "evaporation_mm": 3.082285578510928
+    },
+    "water_quality": {
+      "tds_ppm": 625.2146695724566,
+      "ph_level": 6.780695667295406,
+      "turbidity_ntu": 3.6229916514738214,
+      "dissolved_oxygen": 6.582091598783176,
+      "conductivity": 438.8866312233434,
+      "timestamp": "2026-03-31 13:29:02.466014",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 64.72764261675175,
+      "storage_volume_mcm": 516.1700471879702,
+      "inflow_cusecs": 944.0291936804725,
+      "outflow_cusecs": 1078.42934875461,
+      "timestamp": "2026-03-31 13:29:02.466014",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 6.211083345506987,
+      "crop_water_requirement": 5.096915448783521,
+      "irrigation_efficiency": 0.702124771441691,
+      "soil_moisture_percent": 28.95144151010389,
+      "vegetation_index": 0.3064415767581883,
+      "timestamp": "2026-03-31 13:29:02.466014",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 3.9297907002298533,
+      "recycling_rate": 0.40040055323434554,
+      "discharge_quality_ph": 6.1665704953065275,
+      "discharge_tds_ppm": 634.9354548600344,
+      "operational_hours": 19.884559063446847,
+      "timestamp": "2026-03-31 13:29:02.466014",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 31.10549254861946,
+      "vegetation_index": 0.32414912086040226,
+      "land_surface_temp": 28.164236909823156,
+      "evapotranspiration_mm": 5.210353525110737,
+      "precipitation_mm": 3.214162464236419,
+      "cloud_cover_percent": 45.08971118386641,
+      "timestamp": "2026-03-31 13:29:02.466014",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  },
+  "Coimbatore": {
+    "location": "Coimbatore",
+    "timestamp": "2026-03-31T13:32:33.885507",
+    "weather": {
+      "temperature": 34.8,
+      "humidity": 36,
+      "rainfall_mm": 0.0,
+      "pressure": 961.7,
+      "wind_speed": 16.2,
+      "cloud_cover": 31,
+      "timestamp": "2026-03-31 13:32:33.882994",
+      "source": "Open-Meteo",
+      "evaporation_mm": 2.5044649258326066
+    },
+    "water_quality": {
+      "tds_ppm": 306.9523548772213,
+      "ph_level": 7.185659068468141,
+      "turbidity_ntu": 1.3807492809805182,
+      "dissolved_oxygen": 4.810426075961566,
+      "conductivity": 631.4076655062764,
+      "timestamp": "2026-03-31 13:32:33.884499",
+      "source": "Simulated IoT Sensors"
+    },
+    "reservoir": {
+      "level_percentage": 47.61522353162148,
+      "storage_volume_mcm": 447.3767452258759,
+      "inflow_cusecs": 1250.7696408256343,
+      "outflow_cusecs": 940.7214443461077,
+      "timestamp": "2026-03-31 13:32:33.885507",
+      "source": "Simulated Dam Sensors"
+    },
+    "agricultural": {
+      "water_usage_mld": 5.818848215114358,
+      "crop_water_requirement": 4.603179719381777,
+      "irrigation_efficiency": 0.6047918921826736,
+      "soil_moisture_percent": 28.337797839454556,
+      "vegetation_index": 0.40161391132070706,
+      "timestamp": "2026-03-31 13:32:33.885507",
+      "source": "Simulated Agricultural Sensors"
+    },
+    "industrial": {
+      "water_usage_mld": 2.555106153272397,
+      "recycling_rate": 0.4797267095065878,
+      "discharge_quality_ph": 6.4827537074737505,
+      "discharge_tds_ppm": 583.83394749265,
+      "operational_hours": 25.591370307692063,
+      "timestamp": "2026-03-31 13:32:33.885507",
+      "source": "Simulated Industrial Sensors"
+    },
+    "satellite": {
+      "soil_moisture_percent": 31.91198210025826,
+      "vegetation_index": 0.46518076211172543,
+      "land_surface_temp": 35.78934781166675,
+      "evapotranspiration_mm": 4.137355658363091,
+      "precipitation_mm": 4.785434437135557,
+      "cloud_cover_percent": 22.343808725767687,
+      "timestamp": "2026-03-31 13:32:33.885507",
+      "source": "Simulated Satellite Data"
+    },
+    "data_sources": [
+      "Open-Meteo",
+      "Simulated IoT Sensors",
+      "Simulated Dam Sensors",
+      "Simulated Agricultural Sensors",
+      "Simulated Industrial Sensors",
+      "Simulated Satellite Data"
+    ]
+  }
+}
