@@ -647,12 +647,15 @@ def chat_with_multi_factor_ai():
     try:
         data = request.get_json()
         user_msg = data.get('message', '').strip()
-        # HARDCODED DEVELOPER API KEY
-        api_key = "AIzaSyDykMhGW70WIH3pjIM8lUOGlXw_BHwtqo8"
+        # Get API key from environment (recommended) or fallback to inline key
+        api_key = os.environ.get('GENAI_API_KEY') or "AIzaSyBQPDbeScWqycoV8dcjSyR6RyFsAcKpHyU"
         context = data.get('context', {})
 
         if not user_msg:
             return jsonify({'response': 'Please provide a valid query.'})
+
+        if not api_key:
+            return jsonify({'response': 'Generative AI Protocol Error: API key missing. Set GENAI_API_KEY environment variable.'})
 
         # Configure Generative AI
         genai.configure(api_key=api_key)
@@ -677,20 +680,34 @@ def chat_with_multi_factor_ai():
         Format your response cleanly. Use **bold** for emphasis, but DO NOT use excessive Markdown headers or deeply nested bullet points.
         """
         
-        # Instantiate standard Gemini Pro model for maximum compatibility
-        model = genai.GenerativeModel('gemini-pro')
+        # Instantiate a current Gemini model that supports generate_content
+        # (If this fails, check model list via genai.list_models() with a valid key.)
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # Generation combining instructions and user query safely
         final_prompt = f"{system_instruction}\n\nUser Query: {user_msg}\nRespond brilliantly as AquaIntel AI."
-        response = model.generate_content(final_prompt)
-        
-        # Parse Markdown to basic HTML for the UI
-        reply = response.text.replace('\n\n', '<br><br>').replace('\n', '<br>')
-        reply = re.sub(r'\*\*(.*?)\*\*', r'<b style="color:var(--text-main)">\1</b>', reply)
-        reply = re.sub(r'\*(.*?)\*', r'<i>\1</i>', reply)
+        try:
+            response = model.generate_content(final_prompt)
+            # Parse Markdown to basic HTML for the UI
+            reply = response.text.replace('\n\n', '<br><br>').replace('\n', '<br>')
+            reply = re.sub(r'\*\*(.*?)\*\*', r'<b style="color:var(--text-main)">\1</b>', reply)
+            reply = re.sub(r'\*(.*?)\*', r'<i>\1</i>', reply)
+            return jsonify({'response': reply})
+        except Exception as genai_error:
+            # Fallback to local deterministic answer when external AI fails
+            fallback_msg = (
+                "AquaIntel local fallback: I cannot reach the cloud LLM right now, "
+                "but I can provide a risk-aware summary based on available data. "
+            )
+            fallback_msg += f"Region: {loc_name}, risk={risk}. "
+            if risk in ['Severe', 'High']:
+                fallback_msg += "Immediate water conservation, rationing planning, and external aid coordination are recommended."
+            elif risk == 'Medium':
+                fallback_msg += "Monitor daily usage and enforce efficiency measures."
+            else:
+                fallback_msg += "Keep an eye on trends and prepare response templates."
+            return jsonify({'response': fallback_msg})
 
-        return jsonify({'response': reply})
-        
     except Exception as e:
         return jsonify({'response': f"Generative AI Protocol Error: {str(e)}"})
 
