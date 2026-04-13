@@ -638,33 +638,34 @@ def get_recommendation(risk_level):
     }
     return recommendations.get(risk_level, ['Monitor situation closely and consult experts.'])
 
-import google.generativeai as genai
+from groq import Groq
 import re
 
 @app.route('/api/chat', methods=['POST'])
 def chat_with_multi_factor_ai():
     """True Generative AI Chatbot connected via Google Gemini LLM API."""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         user_msg = data.get('message', '').strip()
-        # Get API key from environment (recommended) or fallback to inline key
-        api_key = os.environ.get('GENAI_API_KEY') or "AIzaSyBQPDbeScWqycoV8dcjSyR6RyFsAcKpHyU"
-        context = data.get('context', {})
+        # Read API key from environment variable
+        api_key = os.environ.get('GROQ_API_KEY', '').strip()
+        context = data.get('context') or {}
 
         if not user_msg:
             return jsonify({'response': 'Please provide a valid query.'})
 
         if not api_key:
-            return jsonify({'response': 'Generative AI Protocol Error: API key missing. Set GENAI_API_KEY environment variable.'})
+            return jsonify({'response': '⚠️ <b>Groq API Key Not Set.</b> Please create a new completely free key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent);text-decoration:underline;">Groq Console</a>, and then run this command in your terminal before starting the server:<br><br><code style="background:rgba(255,255,255,0.1);padding:4px 8px;border-radius:4px;">$env:GROQ_API_KEY="YOUR_KEY_HERE"</code>'})
 
-        # Configure Generative AI
-        genai.configure(api_key=api_key)
+
+        # Configure Generative AI using Groq SDK
+        client = Groq(api_key=api_key)
         
         # Build Context Environment
-        loc_name = context.get('location_name', 'an unknown region')
-        latest_data = context.get('latest_measurement', {})
+        loc_name = context.get('city') or context.get('location_key') or 'an unknown region'
+        latest_data = context.get('latest_measurement') or {}
         risk = latest_data.get('risk_level', 'Unknown')
-        cause = context.get('cause_breakdown', {})
+        cause = context.get('cause_breakdown') or {}
         
         system_instruction = f"""
         You are 'AquaIntel AI', an advanced, professional AI analyst for an Urban Water Scarcity Prediction platform in India.
@@ -680,16 +681,18 @@ def chat_with_multi_factor_ai():
         Format your response cleanly. Use **bold** for emphasis, but DO NOT use excessive Markdown headers or deeply nested bullet points.
         """
         
-        # Instantiate a current Gemini model that supports generate_content
-        # (If this fails, check model list via genai.list_models() with a valid key.)
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        
-        # Generation combining instructions and user query safely
-        final_prompt = f"{system_instruction}\n\nUser Query: {user_msg}\nRespond brilliantly as AquaIntel AI."
         try:
-            response = model.generate_content(final_prompt)
+            completion = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": f"User Query: {user_msg}\nRespond brilliantly as AquaIntel AI."}
+                ]
+            )
+            
             # Parse Markdown to basic HTML for the UI
-            reply = response.text.replace('\n\n', '<br><br>').replace('\n', '<br>')
+            reply = completion.choices[0].message.content
+            reply = reply.replace('\n\n', '<br><br>').replace('\n', '<br>')
             reply = re.sub(r'\*\*(.*?)\*\*', r'<b style="color:var(--text-main)">\1</b>', reply)
             reply = re.sub(r'\*(.*?)\*', r'<i>\1</i>', reply)
             return jsonify({'response': reply})
